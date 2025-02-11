@@ -1,0 +1,25 @@
+FROM deepseek-r1:latest
+
+# Kiểm soát độ sáng tạo (cao = sáng tạo hơn, thấp = chính xác hơn)
+PARAMETER temperature 0.7
+
+# Số token tối đa mô hình có thể nhớ
+PARAMETER num_ctx 1024
+
+# Kiểm soát mức độ random khi chọn token tiếp theo (0 = chắc chắn, 1 = ngẫu nhiên)
+PARAMETER top_p 0.9
+
+# Số token tối đa có thể sinh ra
+PARAMETER num_predict 512
+
+TEMPLATE """
+{{- if .System }}{{ .System }}{{ end }}
+{{- range $i, $_ := .Messages }}
+{{- $last := eq (len (slice $.Messages $i)) 1}}
+{{- if eq .Role "user" }}<｜User｜>{{ .Content }}
+{{- else if eq .Role "assistant" }}<｜Assistant｜>{{ .Content }}{{- if not $last }}<｜end▁of▁sentence｜>{{- end }}
+{{- end }}
+{{- if and $last (ne .Role "assistant") }}<｜Assistant｜>{{- end }}
+{{- end }}
+"""
+
